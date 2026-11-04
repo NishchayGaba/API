@@ -1,0 +1,5 @@
+Also add in. .claude/settings.json
+
+"env": {
+  "CLAUDE_CODE_MAX_CONTENT_TOKENS" :   "1000000"
+}
